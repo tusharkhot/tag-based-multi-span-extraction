@@ -248,3 +248,24 @@ def _get_comparison_tokens(tokenize_func, text, boundary_token_offset, token_off
                            search_length, **tokenize_func_kwargs):
     search_text = text[boundary_token_offset : token_offset + search_length]
     return tokenize_func(search_text, **tokenize_func_kwargs)
+
+
+def fix_roberta_type_ids(token_type_ids, special_tokens_mask):
+    if 1 in token_type_ids:
+        return token_type_ids
+
+    # roberta model has no type ids
+    special_sep_position = [i for i in range(len(special_tokens_mask) - 2)
+                            if special_tokens_mask[i] == 1 and
+                            special_tokens_mask[i+1] == 1 and
+                            special_tokens_mask[i+2] != 1]
+
+    if len(special_sep_position) != 1:
+        raise ValueError("Didn't find one position with consecutive special tokens in"
+                         " {}".format(special_tokens_mask))
+
+    for i in range(special_sep_position[0] + 2,  len(token_type_ids)):
+        token_type_ids[i] = 1
+
+    return token_type_ids
+

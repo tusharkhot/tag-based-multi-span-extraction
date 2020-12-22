@@ -20,6 +20,7 @@ from src.data.dataset_readers.utils import custom_word_tokenizer, split_tokens_b
 from src.data.dataset_readers.utils import is_pickle_dict_valid, load_pkl, save_pkl
 from src.data.dataset_readers.answer_field_generators.answer_field_generator import AnswerFieldGenerator
 from src.data.fields.labels_field import LabelsField
+from src.data.tokenizers.tokenization_utils import fix_roberta_type_ids
 
 logger = logging.getLogger(__name__)
 
@@ -181,6 +182,9 @@ class QuorefReader(DatasetReader):
                                     truncation_strategy='only_second',
                                     return_token_type_ids=True,
                                     return_special_tokens_mask=True)
+        # fix token_type_ids for roberta
+        encoded_inputs['token_type_ids'] = fix_roberta_type_ids(encoded_inputs['token_type_ids'],
+                                                                encoded_inputs['special_tokens_mask'])
         question_passage_token_type_ids = encoded_inputs['token_type_ids']
         question_passage_special_tokens_mask = encoded_inputs['special_tokens_mask']
 

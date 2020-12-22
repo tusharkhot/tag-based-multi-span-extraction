@@ -23,6 +23,8 @@ from src.data.dataset_readers.answer_field_generators.answer_field_generator imp
 from src.data.dataset_readers.drop.drop_utils import (extract_number_occurrences, clipped_passage_num, 
                                                       get_number_indices_field)
 from src.data.fields.labels_field import LabelsField
+from src.data.tokenizers.tokenization_utils import fix_roberta_type_ids
+
 
 logger = logging.getLogger(__name__)
 
@@ -185,6 +187,9 @@ class DropReader(DatasetReader):
                                     return_special_tokens_mask=True)
         question_passage_token_type_ids = encoded_inputs['token_type_ids']
         question_passage_special_tokens_mask = encoded_inputs['special_tokens_mask']
+        # fix token_type_ids for roberta
+        encoded_inputs['token_type_ids'] = fix_roberta_type_ids(encoded_inputs['token_type_ids'],
+                                                                encoded_inputs['special_tokens_mask'])
 
         question_position = self._tokenizer.get_type_position_in_sequence(0, question_passage_token_type_ids, question_passage_special_tokens_mask)
         passage_position = self._tokenizer.get_type_position_in_sequence(1, question_passage_token_type_ids, question_passage_special_tokens_mask)
